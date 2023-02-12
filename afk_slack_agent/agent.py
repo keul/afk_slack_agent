@@ -5,6 +5,7 @@ import sys
 import time
 import atexit
 from dataclasses import dataclass
+import psutil
 from multiprocessing.connection import Listener
 from threading import Thread
 
@@ -49,9 +50,20 @@ status = Status()
 slack_status = NextSlackStatus()
 
 
+def check_slack_is_active():
+    ls = []
+    for p in psutil.process_iter(["name"]):
+        if p.info["name"] == "Slack":
+            ls.append(p)
+    return len(ls) > 0
+
+
 class GetScreenLock(NSObject):
     def getScreenIsLocked_(self, notification):
         click.echo("Screen has been locked")
+        if not check_slack_is_active():
+            click.echo("Slack client is not active. Doing nothing")
+            return
         if status.im_afk:
             return
         status.im_afk = True
@@ -81,6 +93,9 @@ class GetScreenLock(NSObject):
     def getScreenIsUnlocked_(self, notification):
         global slack_status
         click.echo("Screen has been unlocked")
+        if not check_slack_is_active():
+            click.echo("Slack client is not active. Doing nothing")
+            return
         if not status.im_afk:
             return
         status.im_afk = False

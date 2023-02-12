@@ -24,7 +24,7 @@ DEFAULT_JSON = {
     # emoji (without ":"s) to be used instead of the back_message (requires `reactions:write` scope)
     "back_emoji": "back",
     # delay in seconds to use the back_emoji instead of the back_message
-    "delay_for_reaction_emoji": 5,
+    "delay_for_reaction_emoji": 60,
     "actions": [
         {
             "action": "lunch",

@@ -9,6 +9,9 @@ from . import config
 
 
 def validate_action(action: str):
+    if not action:
+        click.echo("No action provided. Action is required when running the client.")
+        sys.exit(1)
     actions = [a.get("action") for a in config.get_config("actions") if a.get("action")] + [
         "terminate"
     ]

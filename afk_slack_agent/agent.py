@@ -1,5 +1,6 @@
 """Agent module."""
 
+import os
 import logging
 import sys
 import time
@@ -18,7 +19,7 @@ from PyObjCTools import AppHelper
 
 from slack_sdk import WebClient
 
-from .config import get_config
+from .config import get_config, check_or_create_config, SOCKET_DESCRIPTOR
 from . import os_interaction_utils
 
 client = None
@@ -44,6 +45,7 @@ class NextSlackStatus:
     status_text: str = get_config("status_text")
     status_emoji: str = get_config("status_emoji")
     away_message: str = get_config("away_message")
+    back_message: str = get_config("back_message")
 
 
 status = Status()
@@ -99,8 +101,6 @@ class GetScreenLock(NSObject):
         if not status.im_afk:
             return
         status.im_afk = False
-        # Reset next slack status
-        slack_status = NextSlackStatus()
         try:
             click.echo("Setting back status")
             client.api_call(
@@ -113,7 +113,7 @@ class GetScreenLock(NSObject):
                     }
                 },
             )
-            if get_config("channel") and get_config("back_message"):
+            if get_config("channel") and slack_status.back_message:
                 # 1. if you are back in less than "delay_for_reaction_emoji" seconds, use an emoji
                 if (
                     status.last_activity_ts + get_config("delay_for_reaction_emoji")
@@ -130,10 +130,13 @@ class GetScreenLock(NSObject):
                 click.echo("Sending back message")
                 client.chat_postMessage(
                     channel=get_config("channel"),
-                    text=get_config("back_message"),
+                    text=slack_status.back_message,
                 )
         except Exception as e:
             click.echo(f"Error: {e}")
+        finally:
+            # Reset next slack status
+            slack_status = NextSlackStatus()
 
 
 getScreenLock = GetScreenLock.new()
@@ -167,11 +170,19 @@ def find_action(msg):
 def fill_slack_status(action_conf):
     global slack_status
     slack_status.status_text = action_conf.get("status_text", "")
-    slack_status.status_emoji = action_conf.get("status_emoji", None)
-    slack_status.away_message = action_conf.get("away_message", None)
+    slack_status.status_emoji = action_conf.get("status_emoji", "")
+    slack_status.away_message = action_conf.get("away_message", "")
+    back_message = action_conf.get("back_message", "")
+    if back_message is not False:
+        slack_status.back_message = back_message or get_config("back_message")
+    else:
+        slack_status.back_message = None
+    print(slack_status.back_message)
 
 
 def execute_command(command):
+    if not command:
+        return
     click.echo(f"Executing command {command}")
     match command:
         case "sleep":
@@ -184,7 +195,11 @@ def execute_command(command):
 
 
 def listen_for_messages():
-    listener = Listener("/tmp/slack_afk_agent", "AF_UNIX")
+    try:
+        os.unlink(SOCKET_DESCRIPTOR)
+    except FileNotFoundError:
+        pass
+    listener = Listener(SOCKET_DESCRIPTOR, "AF_UNIX")
     conn = listener.accept()
     while True:
         msg = None
@@ -211,9 +226,30 @@ def listen_for_messages():
     sys.exit(0)
 
 
-def main(verbose: int = False):
-    click.echo("AFK management: starting…")
+@click.command()
+@click.option(
+    "-v",
+    "verbose",
+    is_flag=True,
+    default=False,
+    help="More verbose logging.",
+)
+def main(verbose: bool = False):
+    """AFK agent integration with Slack™.
+
+    This command runs a Slack integration agent on the system.
+
+    \b
+    As an agent (-a), it will:
+    - Capture your lock screen activation/deactivation and communicate them to Slack
+    - Listen for messages from the client
+
+    Configuring actions is done by editing the .afk.json file in your home directory.
+    The file will be created the first time you run the agent.
+    """
     global client
+    click.echo("AFK agent: starting…")
+    check_or_create_config()
     atexit.register(exit_handler)
     if verbose:
         logging.basicConfig(level=logging.DEBUG)
@@ -228,3 +264,7 @@ def main(verbose: int = False):
     # 2. wait for system messages
     client = WebClient(token=token)
     AppHelper.runConsoleEventLoop()
+
+
+if __name__ == "__main__":
+    sys.exit(main())  # pragma: no cover

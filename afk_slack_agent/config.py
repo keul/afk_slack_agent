@@ -11,6 +11,8 @@ config = {}
 home = str(Path.home())
 config_file = os.path.join(home, ".afk.json")
 
+SOCKET_DESCRIPTOR = "/tmp/slack_afk_agent"
+
 CONFIG_VERSION = 1
 
 DEFAULT_JSON = {
@@ -32,6 +34,8 @@ DEFAULT_JSON = {
             "status_text": "Lunch break",
             "status_emoji": ":spaghetti:",
             "away_message": "I'm going to take the lunch break",
+            # Use boolean false to not send back message or reaction, null to inherit from global
+            "back_message": "I'm back and stuffed!",
             "command": "lock",
         },
     ],

@@ -32,7 +32,8 @@ setup(
     description="Signal you A.F.K. status on Slack automatically",
     entry_points={
         "console_scripts": [
-            "afk=afk_slack_agent.cli:main",
+            "afk_agent=afk_slack_agent.agent:main",
+            "afk=afk_slack_agent.client:main",
         ],
     },
     install_requires=requirements,

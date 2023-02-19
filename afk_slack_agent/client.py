@@ -29,13 +29,38 @@ def validate_action(action: str):
     default=False,
     help="More verbose logging.",
 )
+@click.option(
+    "-s",
+    "--status",
+    default="",
+    help="Custom status for the AFK action.",
+)
+@click.option(
+    "-e",
+    "--emoji",
+    default="",
+    help="Custom status emoji for the AFK action.",
+)
+@click.option(
+    "-m",
+    "--away-message",
+    "away_message",
+    default="",
+    help="Custom away message for the AFK action.",
+)
 @click.argument("action", required=False)
-def main(verbose: bool = False, action: str = None):
+def main(
+    verbose: bool = False,
+    status: str = "",
+    emoji: str = "",
+    away_message: str = "",
+    action: str = None,
+):
     """Client for AFK agent integration with Slack™.
 
     This command connects to the afk_agent process, to runs actions on the system.
-
     Configuring actions is done by editing the .afk.json file in your home directory.
+    Action can be overridden by using options.
     """
     if verbose:
         logging.basicConfig(level=logging.DEBUG)
@@ -44,7 +69,14 @@ def main(verbose: bool = False, action: str = None):
     try:
         conn = Client(config.SOCKET_DESCRIPTOR, "AF_UNIX")
         click.echo(f"Sending {action}")
-        conn.send(action)
+        conn.send(
+            {
+                "action": action,
+                "status_text": status,
+                "status_emoji": emoji,
+                "away_message": away_message,
+            }
+        )
         conn.close()
     except FileNotFoundError:
         click.echo("Error: is agent running?")

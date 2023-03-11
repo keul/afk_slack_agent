@@ -25,6 +25,8 @@ DEFAULT_JSON = {
     "back_message": "I'm back",
     # emoji (without ":"s) to be used instead of the back_message (requires `reactions:write` scope)
     "back_emoji": "back",
+    # adds this emoji as " (<emoji_here)"" to every message, to warn reader this is an automated message
+    "agent_emoji": "robot_face",
     # delay in seconds to use the back_emoji instead of the back_message
     "delay_for_reaction_emoji": 60,
     "actions": [

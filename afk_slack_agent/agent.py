@@ -24,6 +24,12 @@ from . import os_interaction_utils
 client = None
 
 
+def compute_message(message):
+    if get_config("agent_emoji"):
+        return f"{message} (:{get_config('agent_emoji')}:)"
+    return message
+
+
 def get_unix_time(plus_seconds=0):
     """Get the current unix time.
 
@@ -104,7 +110,7 @@ def handleBack():
             click.echo("Sending back message")
             client.chat_postMessage(
                 channel=get_config("channel"),
-                text=slack_status.back_message,
+                text=compute_message(slack_status.back_message),
             )
     except Exception as e:
         click.echo(f"Error: {e}")
@@ -122,7 +128,7 @@ def handleAFK():
             api_method="users.profile.set",
             params={
                 "profile": {
-                    "status_text": slack_status.status_text,
+                    "status_text": compute_message(slack_status.status_text),
                     "status_emoji": slack_status.status_emoji,
                     "status_expiration": 0,
                 }
@@ -133,7 +139,7 @@ def handleAFK():
             click.echo("Sending away message")
             data = client.chat_postMessage(
                 channel=get_config("channel"),
-                text=slack_status.away_message,
+                text=compute_message(slack_status.away_message),
             )
             status.last_message_ts = data["ts"]
             status.last_activity_ts = get_unix_time()
@@ -245,7 +251,9 @@ def listen_for_messages():
         click.echo(f"Message: {msg}")
         # do something with msg
         if msg["action"] == "terminate":
+            click.echo(f"Received termination request. Exiting")
             conn.close()
+            AppHelper.stopEventLoop()
             break
         # Now looks for user defined actions
         action = find_action(msg["action"])

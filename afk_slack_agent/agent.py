@@ -22,6 +22,7 @@ from .config import get_config, check_or_create_config, SOCKET_DESCRIPTOR
 from . import os_interaction_utils
 
 client = None
+check_or_create_config()
 
 
 def compute_message(message):

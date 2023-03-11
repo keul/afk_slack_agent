@@ -8,18 +8,129 @@ AFK Slack Agent
 
 Signal you A.F.K. status on Slack automatically
 
-* Free software: Apache Software License 2.0
-* Documentation: https://afk-slack-agent.readthedocs.io.
+.. contents:: Table of Contents
 
-Features
---------
+.. warning::
+    This software is for MacOS only!
 
-* TODO
+Installation
+============
 
-Credits
--------
+.. code-block:: bash
+    pip install afk_slack_agent
 
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+What it does?
+=============
 
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+This software is distributed with an agent (``afk_agent``) and a client (``afk``, optional).
+
+The agent is designed to be run in background and stay active until you terminate it.
+
+Features implemented by the agent
+
+- waits for lock screen and unlock screen events
+- connects to a Slack workspace, and change user status on lock (clean it on unlock)
+- optionally: write a message on a channel on lock/unlock
+
+Prerequisites
+=============
+
+- you have to `create a Slack application <https://api.slack.com/apps?new_app=1>`_, and install it into your workspace
+  - the application should have at least the following `scope <https://api.slack.com/scopes)`_: ``users.profile:write``.  
+    optionally, you could also enable ``chat:write`` and ``reactions:write``
+- to run custom AFK commands from the client, you'll nee to enable the agent to control your Mac (from "Privacy and Security" system settings)
+
+Configuration
+=============
+
+The first time the agent is run, a ``~/.afk.json`` file is created.
+
+This is the default file created:
+
+.. code-block:: json
+    {
+      "version": 1,
+      "token": "",
+      "status_text": "I need a break",
+      "status_emoji": ":coffee:",
+      "channel": null,
+      "away_message": "I'm going to take a coffee break",
+      "back_message": "I'm back",
+      "delay_for_reaction_emoji": 60,
+      "back_emoji": "back",
+      "agent_emoji": "robot_face",
+      "actions": [
+        {
+          "action": "lunch",
+          "status_text": "Lunch break",
+          "status_emoji": ":spaghetti:",
+          "away_message": "I'm going to take the lunch break",
+          "back_message": "I'm back and stuffed!",
+          "command": "lock"
+        }
+      ]
+    }
+
+The most important key is ``token``, which must contain the Slack User OAuth Token.
+
+.. image:: https://raw.githubusercontent.com/keul/afk_slack_agent/main/docs/slack-key.png
+        :alt: Slack configuration, where to grab your token
+
+Other settings
+--------------
+
+``status_text``
+  Status to be set when locking the screen
+
+``status_emoji``
+  emoji to be set when locking the screen
+
+``channel``
+  use this only if you want to write messages on a channel when going AFK and be back.
+  
+  Put there the channel id. You can find it by right-click on the channel and clicking "View channel details".
+  It will be at the very bottom of the popup.
+
+``away_message``
+  message to send when going  AFK
+
+``back_message``
+  message to send when back to keyboard
+
+``delay_for_reaction_emoji``
+  in case you will be back before this amount of seconds, do not send a back message, but just react to your away message using a reaction emoji.
+  This will reduce noise in case of quick lock/unlock screen
+
+``back_emoji``
+  emoji to be used for quick back reaction
+
+``agent_emoji``
+  automatically add this emoji at the end of every message send or slack status set.
+  This helps other to know there's a bot that is acting for you.
+
+Custom actions
+~~~~~~~~~~~~~~
+
+The JSON configuration can contain an ``actions`` key, with an array of custom actions.
+
+Custom actions can be sent to the agent using the client:
+
+.. code-block:: bash
+    afk lunch
+
+A custom action is a way to perform something more than the standard lock/unlock monitor.
+
+An action interact with Slack in the same way and inherit configuration from the global definition, but it can override some of them like: ``status_text``, ``status_emoji``, ``away_message`` and ``back_message``.
+
+Finally, a custom action can perform one of the following commands:
+
+``lock``
+  Lock the screen manually
+
+``sleep``
+  Put you computer to sleep
+
+Why?
+====
+
+A complete explanation of the 

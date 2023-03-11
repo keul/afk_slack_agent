@@ -48,6 +48,12 @@ def validate_action(action: str):
     default="",
     help="Custom away message for the AFK action.",
 )
+@click.option(
+    "--silent",
+    is_flag=True,
+    default=False,
+    help="Do not write messages for this action.",
+)
 @click.argument("action", required=False)
 def main(
     verbose: bool = False,
@@ -55,6 +61,7 @@ def main(
     emoji: str = "",
     away_message: str = "",
     action: str = None,
+    silent: bool = False,
 ):
     """Client for AFK agent integration with Slack™.
 
@@ -75,6 +82,7 @@ def main(
                 "status_text": status,
                 "status_emoji": emoji,
                 "away_message": away_message,
+                "silent": silent,
             }
         )
         conn.close()

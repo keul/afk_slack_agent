@@ -209,10 +209,14 @@ def _property_getter(prop, custom, action):
 
 def fill_slack_status(custom_message: dict, action_conf: dict):
     logging.debug(f"filling slack status with {custom_message}, {action_conf}")
+    silent = custom_message.get("silent", False)
     slack_status.status_text = _property_getter("status_text", custom_message, action_conf)
     slack_status.status_emoji = _property_getter("status_emoji", custom_message, action_conf)
-    slack_status.away_message = _property_getter("away_message", custom_message, action_conf)
-    if action_conf.get("back_message", "") is not False:
+    if not silent:
+        slack_status.away_message = _property_getter("away_message", custom_message, action_conf)
+    else:
+        slack_status.away_message = None
+    if action_conf.get("back_message", "") is not False and not silent:
         slack_status.back_message = action_conf.get("back_message", "") or get_config(
             "back_message"
         )

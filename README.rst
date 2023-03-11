@@ -6,7 +6,7 @@ AFK Slack Agent
 .. image:: https://img.shields.io/pypi/v/afk_slack_agent.svg
         :target: https://pypi.python.org/pypi/afk_slack_agent
 
-Signal you A.F.K. status on Slack automatically
+Signal you A.F.K. (Away From Keyboard) status on Slack, automatically.
 
 .. contents:: Table of Contents
 
@@ -120,7 +120,11 @@ Custom actions can be sent to the agent using the client:
 
 A custom action is a way to perform something more than the standard lock/unlock monitor.
 
-An action interact with Slack in the same way and inherit configuration from the global definition, but it can override some of them like: ``status_text``, ``status_emoji``, ``away_message`` and ``back_message``.
+See the ``afk`` command line help for more.
+
+An action interact with Slack in the same way the anget does, and inherit the same configuration, but it can override some of them like: ``status_text``, ``status_emoji``, ``away_message`` and ``back_message``.
+Every of these settings can be ``null`` to explicitly inherith from the global settings.
+``back_message`` can also be ``false``: this disable the back message for the action even if the global setting has a value.
 
 Finally, a custom action can perform one of the following commands:
 
@@ -133,4 +137,4 @@ Finally, a custom action can perform one of the following commands:
 Why?
 ====
 
-A complete explanation of the 
+To understand motivation about this tool, read `why I needed to join my lock screen activities with Slack<https://blog.keul.it/automate-slack-afk-status/>`_.

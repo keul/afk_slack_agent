@@ -22,7 +22,10 @@ from .config import get_config, check_or_create_config, SOCKET_DESCRIPTOR
 from . import os_interaction_utils
 
 client = None
-check_or_create_config()
+afk_thread = None
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def compute_message(message):
@@ -42,22 +45,24 @@ def get_unix_time(plus_seconds=0):
 @dataclass
 class Status:
     im_afk: bool = False
+    going_afk: bool = False
     last_message_ts: str = None
     last_activity_ts: int = get_unix_time()
 
     def __str__(self) -> str:
         return (
-            f"Status(im_afk={self.im_afk}, last_message_ts={self.last_message_ts}, "
+            f"Status(im_afk={self.im_afk}, going_afk={self.going_afk} "
+            f"last_message_ts={self.last_message_ts}, "
             f"last_activity_ts={self.last_activity_ts})"
         )
 
 
-@dataclass
 class NextSlackStatus:
-    status_text: str = get_config("status_text")
-    status_emoji: str = get_config("status_emoji")
-    away_message: str = get_config("away_message")
-    back_message: str = get_config("back_message")
+    def __init__(self):
+        self.status_text: str = get_config("status_text")
+        self.status_emoji: str = get_config("status_emoji")
+        self.away_message: str = get_config("away_message")
+        self.back_message: str = get_config("back_message")
 
     def __str__(self) -> str:
         return (
@@ -66,8 +71,8 @@ class NextSlackStatus:
         )
 
 
-status = Status()
-slack_status = NextSlackStatus()
+status = None
+slack_status = None
 
 
 def check_slack_is_active():
@@ -80,7 +85,14 @@ def check_slack_is_active():
 
 def handleBack():
     global slack_status
+    logger.debug("status: %s", slack_status)
+    if status.going_afk and not status.im_afk:
+        # Come back before fully going AFK. Do nothing
+        click.echo("Back before fully going AFK. Abort")
+        status.going_afk = False
+        return
     status.im_afk = False
+    status.going_afk = False
     try:
         click.echo("Setting back status")
         client.api_call(
@@ -122,30 +134,45 @@ def handleBack():
 
 
 def handleAFK():
-    status.im_afk = True
-    try:
-        click.echo("Setting away status")
-        client.api_call(
-            api_method="users.profile.set",
-            params={
-                "profile": {
-                    "status_text": compute_message(slack_status.status_text),
-                    "status_emoji": slack_status.status_emoji,
-                    "status_expiration": 0,
-                }
-            },
-        )
-        logging.debug("slack status: %s", slack_status)
-        if get_config("channel") and slack_status.away_message:
-            click.echo("Sending away message")
-            data = client.chat_postMessage(
-                channel=get_config("channel"),
-                text=compute_message(slack_status.away_message),
+    status.going_afk = True
+
+    def _perform_afk():
+        # Delay the AFK handling
+        delay = get_config("delay_after_screen_lock", 0)
+        click.echo(f"sleeping for {delay}")
+        time.sleep(delay)
+        if not status.going_afk:
+            # user probably went back before the delay
+            click.echo("Not going AFK anymore. Doing nothing")
+            return
+        status.im_afk = True
+        try:
+            click.echo("Setting away status")
+            client.api_call(
+                api_method="users.profile.set",
+                params={
+                    "profile": {
+                        "status_text": compute_message(slack_status.status_text),
+                        "status_emoji": slack_status.status_emoji,
+                        "status_expiration": 0,
+                    }
+                },
             )
-            status.last_message_ts = data["ts"]
-            status.last_activity_ts = get_unix_time()
-    except Exception as e:
-        click.echo(f"Error: {e}")
+            logger.debug("slack status: %s", slack_status)
+            if get_config("channel") and slack_status.away_message:
+                click.echo("Sending away message")
+                data = client.chat_postMessage(
+                    channel=get_config("channel"),
+                    text=compute_message(slack_status.away_message),
+                )
+                status.last_message_ts = data["ts"]
+                status.last_activity_ts = get_unix_time()
+        except Exception as e:
+            click.echo(f"Error: {e}")
+
+    global afk_thread
+    afk_thread = Thread(target=_perform_afk, daemon=True)
+    afk_thread.start()
 
 
 class HandleScreenLock(NSObject):
@@ -155,7 +182,7 @@ class HandleScreenLock(NSObject):
             click.echo("Slack client is not active. Doing nothing")
             return
         if status.im_afk:
-            logging.debug("Already away. Doing nothing")
+            click.echo("Already away. Doing nothing")
             return
         handleAFK()
 
@@ -163,9 +190,6 @@ class HandleScreenLock(NSObject):
         click.echo("Screen has been unlocked")
         if not check_slack_is_active():
             click.echo("Slack client is not active. Doing nothing")
-            return
-        if not status.im_afk:
-            logging.debug("Already back. Doing nothing")
             return
         handleBack()
 
@@ -209,7 +233,7 @@ def _property_getter(prop, custom, action):
 
 
 def fill_slack_status(custom_message: dict, action_conf: dict):
-    logging.debug(f"filling slack status with {custom_message}, {action_conf}")
+    logger.debug(f"filling slack status with {custom_message}, {action_conf}")
     silent = custom_message.get("silent", False)
     slack_status.status_text = _property_getter("status_text", custom_message, action_conf)
     slack_status.status_emoji = _property_getter("status_emoji", custom_message, action_conf)
@@ -223,7 +247,7 @@ def fill_slack_status(custom_message: dict, action_conf: dict):
         )
     else:
         slack_status.back_message = None
-    logging.debug(f"new slack status: {slack_status}")
+    logger.debug(f"new slack status: {slack_status}")
 
 
 def execute_command(command):
@@ -254,6 +278,10 @@ def listen_for_messages():
             conn = listener.accept()
             continue
         click.echo(f"Message: {msg}")
+        # check is Slack is running
+        if not check_slack_is_active():
+            click.echo("Slack client is not active. Doing nothing")
+            continue
         # do something with msg
         if msg["action"] == "terminate":
             click.echo(f"Received termination request. Exiting")
@@ -295,18 +323,22 @@ def main(verbose: bool = False):
     The file will be created the first time you run the agent.
     """
     global client
+    global slack_status
+    global status
     click.echo("AFK agent: starting…")
     check_or_create_config()
+    slack_status = NextSlackStatus()
+    status = Status()
     atexit.register(exit_handler)
     if verbose:
         logging.basicConfig(level=logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
     token = get_config("token")
     if not token:
         click.echo("Please, fill the token setting in the config file")
         sys.exit(1)
     # 1. start a thread to listen for incoming messages
-    messages_thread = Thread(target=listen_for_messages)
-    messages_thread.daemon = True
+    messages_thread = Thread(target=listen_for_messages, daemon=True)
     messages_thread.start()
     # 2. wait for system messages
     client = WebClient(token=token)

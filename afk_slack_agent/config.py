@@ -29,6 +29,8 @@ DEFAULT_JSON = {
     "agent_emoji": "robot_face",
     # delay in seconds to use the back_emoji instead of the back_message
     "delay_for_reaction_emoji": 60,
+    # delay after screen lock
+    "delay_after_screen_lock": 10,
     "actions": [
         {
             "action": "lunch",
@@ -44,11 +46,11 @@ DEFAULT_JSON = {
 }
 
 
-def get_config(key):
+def get_config(key, default=None):
     global config
     with open(config_file, "r") as f:
         config = json.load(f)
-    return config.get(key)
+    return config.get(key, default)
 
 
 def check_or_create_config():

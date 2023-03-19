@@ -23,13 +23,13 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: MacOS X",
-        "Intended Audience :: Developers",
+        "Intended Audience :: End Users/Desktop",
         "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.10",
     ],
-    description="Signal you A.F.K. status on Slack automatically",
+    description="Signal your A.F.K. status on Slack automatically",
     entry_points={
         "console_scripts": [
             "afk_agent=afk_slack_agent.agent:main",

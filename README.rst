@@ -108,6 +108,12 @@ Other settings
   automatically add this emoji at the end of every message send or slack status set.
   This helps other to know there's a bot that is acting for you.
 
+``delay_after_screen_lock``
+  before starting interacting with Slack, wait this amount of seconds.
+
+  This will delay reactions to you lock screen status a while, so no Slack commands will be run if you unlock the screen before this time.
+  As example: you are reading a document and the screen locks for inactivity, but you are not AFK.
+
 Custom actions
 ~~~~~~~~~~~~~~
 

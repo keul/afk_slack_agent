@@ -133,12 +133,12 @@ def handleBack():
     return slack_status
 
 
-def handleAFK():
+def handleAFK(afk_delay=None):
     status.going_afk = True
 
     def _perform_afk():
         # Delay the AFK handling
-        delay = get_config("delay_after_screen_lock", 0)
+        delay = get_config("delay_after_screen_lock", 0) if afk_delay is None else afk_delay
         click.echo(f"sleeping for {delay}")
         time.sleep(delay)
         if not status.going_afk:
@@ -300,7 +300,7 @@ def listen_for_messages():
             execute_command(action.get("command"))
         else:
             logger.debug("Manually triggering the configuration for this action")
-            handleAFK()
+            handleAFK(0)
     listener.close()
     sys.exit(0)
 

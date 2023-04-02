@@ -296,7 +296,11 @@ def listen_for_messages():
         # Execute the action
         click.echo(f"Executing user defined action: {action}")
         fill_slack_status(msg, action)
-        execute_command(action.get("command"))
+        if not msg.get("no_command"):
+            execute_command(action.get("command"))
+        else:
+            logger.debug("Manually triggering the configuration for this action")
+            handleAFK()
     listener.close()
     sys.exit(0)
 

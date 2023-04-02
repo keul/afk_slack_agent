@@ -17,14 +17,15 @@ Installation
 ============
 
 .. code-block:: bash
-    pip install afk_slack_agent
+   
+   pip install afk_slack_agent
 
 What it does?
 =============
 
 This software is distributed with an agent (``afk_agent``) and a client (``afk``, optional).
 
-The agent is designed to be run in background and stay active until you terminate it.
+The agent is designed to be run in the background and stay active until you terminate it.
 
 Features implemented by the agent
 
@@ -36,9 +37,9 @@ Prerequisites
 =============
 
 - you have to `create a Slack application <https://api.slack.com/apps?new_app=1>`_, and install it into your workspace
-  - the application should have at least the following `scope <https://api.slack.com/scopes)`_: ``users.profile:write``.  
+  - the application should have at least the following `scope <https://api.slack.com/scopes>`_: ``users.profile:write``.
     optionally, you could also enable ``chat:write`` and ``reactions:write``
-- to run custom AFK commands from the client, you'll nee to enable the agent to control your Mac (from "Privacy and Security" system settings)
+- to run custom AFK commands from the client, you'll need to enable the agent to control your Mac (from "Privacy and Security" system settings)
 
 Configuration
 =============
@@ -88,7 +89,7 @@ Other settings
 ``channel``
   use this only if you want to write messages on a channel when going AFK and be back.
   
-  Put there the channel id. You can find it by right-click on the channel and clicking "View channel details".
+  Put the channel id there. You can find it by right-clicking on the channel and clicking "View channel details".
   It will be at the very bottom of the popup.
 
 ``away_message``
@@ -105,13 +106,13 @@ Other settings
   emoji to be used for quick back reaction
 
 ``agent_emoji``
-  automatically add this emoji at the end of every message send or slack status set.
-  This helps other to know there's a bot that is acting for you.
+  automatically adds this emoji at the end of every message sent or slack status set.
+  This helps others to know there's a bot that is acting for you.
 
 ``delay_after_screen_lock``
   before starting interacting with Slack, wait this amount of seconds.
 
-  This will delay reactions to you lock screen status a while, so no Slack commands will be run if you unlock the screen before this time.
+  This will delay reactions to your lock screen status a while, so no Slack commands will be run if you unlock the screen before this time.
   As example: you are reading a document and the screen locks for inactivity, but you are not AFK.
 
 Custom actions
@@ -119,18 +120,19 @@ Custom actions
 
 The JSON configuration can contain an ``actions`` key, with an array of custom actions.
 
-Custom actions can be sent to the agent using the client:
+Custom actions can be sent to the agent using the client component:
 
 .. code-block:: bash
-    afk lunch
+   
+   afk lunch
 
 A custom action is a way to perform something more than the standard lock/unlock monitor.
 
 See the ``afk`` command line help for more.
 
-An action interact with Slack in the same way the anget does, and inherit the same configuration, but it can override some of them like: ``status_text``, ``status_emoji``, ``away_message`` and ``back_message``.
-Every of these settings can be ``null`` to explicitly inherith from the global settings.
-``back_message`` can also be ``false``: this disable the back message for the action even if the global setting has a value.
+An action interact with Slack in the same way the agent does, and inherit the same configuration, but it can override some of them like: ``status_text``, ``status_emoji``, ``away_message`` and ``back_message``.
+Every of these settings can be ``null`` to explicitly inherit from the global settings.
+``back_message`` can also be ``false``: this disables the back message for the action even if the global setting has a value.
 
 Finally, a custom action can perform one of the following commands:
 
@@ -143,4 +145,4 @@ Finally, a custom action can perform one of the following commands:
 Why?
 ====
 
-To understand motivation about this tool, read `why I needed to join my lock screen activities with Slack<https://blog.keul.it/automate-slack-afk-status/>`_.
+To understand motivation about this tool, read `why I needed to join my lock screen activities with Slack <https://blog.keul.it/automate-slack-afk-status/>`_.

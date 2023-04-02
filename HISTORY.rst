@@ -2,7 +2,7 @@
 History
 =======
 
-0.1.0 (Unreleased)
+0.1.0 (2023-04-02)
 ------------------
 
 * First release

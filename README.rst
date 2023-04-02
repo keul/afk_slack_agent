@@ -38,6 +38,7 @@ Prerequisites
 
 - you have to `create a Slack application <https://api.slack.com/apps?new_app=1>`_, and install it into your workspace
   - the application should have at least the following `scope <https://api.slack.com/scopes>`_: ``users.profile:write``.
+    
     optionally, you could also enable ``chat:write`` and ``reactions:write``
 - to run custom AFK commands from the client, you'll need to enable the agent to control your Mac (from "Privacy and Security" system settings)
 
@@ -49,28 +50,29 @@ The first time the agent is run, a ``~/.afk.json`` file is created.
 This is the default file created:
 
 .. code-block:: json
-    {
-      "version": 1,
-      "token": "",
-      "status_text": "I need a break",
-      "status_emoji": ":coffee:",
-      "channel": null,
-      "away_message": "I'm going to take a coffee break",
-      "back_message": "I'm back",
-      "delay_for_reaction_emoji": 60,
-      "back_emoji": "back",
-      "agent_emoji": "robot_face",
-      "actions": [
-        {
-          "action": "lunch",
-          "status_text": "Lunch break",
-          "status_emoji": ":spaghetti:",
-          "away_message": "I'm going to take the lunch break",
-          "back_message": "I'm back and stuffed!",
-          "command": "lock"
-        }
-      ]
-    }
+   
+   {
+     "version": 1,
+     "token": "",
+     "status_text": "I need a break",
+     "status_emoji": ":coffee:",
+     "channel": null,
+     "away_message": "I'm going to take a coffee break",
+     "back_message": "I'm back",
+     "delay_for_reaction_emoji": 60,
+     "back_emoji": "back",
+     "agent_emoji": "robot_face",
+     "actions": [
+       {
+         "action": "lunch",
+         "status_text": "Lunch break",
+         "status_emoji": ":spaghetti:",
+         "away_message": "I'm going to take the lunch break",
+         "back_message": "I'm back and stuffed!",
+         "command": "lock"
+       }
+     ]
+   }
 
 The most important key is ``token``, which must contain the Slack User OAuth Token.
 

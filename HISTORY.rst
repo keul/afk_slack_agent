@@ -2,10 +2,11 @@
 History
 =======
 
-0.1.1 (unreleased)
+0.2.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added ``agent_active_start_time`` and ``agent_active_end_time``
+- Added MacOS system notification support
 
 
 0.1.0 (2023-04-02)

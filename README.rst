@@ -62,6 +62,8 @@ This is the default file created:
      "delay_for_reaction_emoji": 60,
      "back_emoji": "back",
      "agent_emoji": "robot_face",
+     "agent_active_start_time": null,
+     "agent_active_end_time": null,
      "actions": [
        {
          "action": "lunch",
@@ -116,6 +118,14 @@ Other settings
 
   This will delay reactions to your lock screen status a while, so no Slack commands will be run if you unlock the screen before this time.
   As example: you are reading a document and the screen locks for inactivity, but you are not AFK.
+
+``agent_active_start_time`` and ``agent_active_end_time``
+  time range inside which agent is effectively working.
+
+  When provided (in the format as ``HH:MM``), the agent will only effectively works when current time is inside this (potentially open) time range.
+  This can be used to disable the agent when using your computer outside working hours.
+
+  This is not applied to explicit actions (``afk <command>``).
 
 Custom actions
 ~~~~~~~~~~~~~~

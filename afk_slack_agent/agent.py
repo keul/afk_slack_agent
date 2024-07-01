@@ -6,9 +6,10 @@ import sys
 import time
 import atexit
 from dataclasses import dataclass
-import psutil
 from multiprocessing.connection import Listener
 from threading import Thread
+import datetime
+import psutil
 
 import click
 
@@ -83,9 +84,14 @@ def check_slack_is_active():
     return len(ls) > 0
 
 
-def handleBack():
+def handleBack(afk_delay=None):
     global slack_status
     logger.debug("status: %s", slack_status)
+
+    if not agent_is_active():
+        os_interaction_utils.system_message("We are is oustide active time range. Doing nothing")
+        return
+
     if status.going_afk and not status.im_afk:
         # Come back before fully going AFK. Do nothing
         click.echo("Back before fully going AFK. Abort")
@@ -130,13 +136,19 @@ def handleBack():
     finally:
         # Reset next slack status
         slack_status = NextSlackStatus()
-    return slack_status
 
 
 def handleAFK(afk_delay=None):
     status.going_afk = True
 
     def _perform_afk():
+
+        if not agent_is_active():
+            os_interaction_utils.system_message(
+                "We are is oustide active time range. Doing nothing"
+            )
+            return
+
         # Delay the AFK handling
         delay = get_config("delay_after_screen_lock", 0) if afk_delay is None else afk_delay
         click.echo(f"sleeping for {delay}")
@@ -173,6 +185,21 @@ def handleAFK(afk_delay=None):
     global afk_thread
     afk_thread = Thread(target=_perform_afk, daemon=True)
     afk_thread.start()
+
+
+def agent_is_active():
+    """Check if the agent is active based on the time range configuration."""
+    start_time = get_config("agent_active_start_time")
+    end_time = get_config("agent_active_end_time")
+    now = datetime.datetime.now().time().strftime("%H:%M")
+    if (
+        (start_time and end_time and now < start_time or now > end_time)
+        or (start_time and now < start_time)
+        or (end_time and now > end_time)
+    ):
+        click.echo("We are is oustide active time range. Doing nothing")
+        return False
+    return True
 
 
 class HandleScreenLock(NSObject):
@@ -284,7 +311,7 @@ def listen_for_messages():
             continue
         # do something with msg
         if msg["action"] == "terminate":
-            click.echo(f"Received termination request. Exiting")
+            click.echo("Received termination request. Exiting")
             conn.close()
             AppHelper.stopEventLoop()
             break

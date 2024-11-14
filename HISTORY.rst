@@ -5,7 +5,7 @@ History
 0.2.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- If no ``command`` is defined, behave like if ``--no-command`` is used
 
 
 0.2.0 (2024-07-01)

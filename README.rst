@@ -29,9 +29,11 @@ The agent is designed to be run in the background and stay active until you term
 
 Features implemented by the agent
 
-- waits for lock screen and unlock screen events
+- waits for lock screen and unlock screen events (_very buggy, due to changes at every MacOS release_)
 - connects to a Slack workspace, and change user status on lock (clean it on unlock)
 - optionally: write a message on a channel on lock/unlock
+
+Run ``afk --help`` for a list of all commands.
 
 Prerequisites
 =============
@@ -130,7 +132,7 @@ Other settings
 Custom actions
 ~~~~~~~~~~~~~~
 
-The JSON configuration can contain an ``actions`` key, with an array of custom actions.
+The JSON configuration can contain an ``actions`` key, with an array of *custom actions*.
 
 Custom actions can be sent to the agent using the client component:
 
@@ -153,6 +155,8 @@ Finally, a custom action can perform one of the following commands:
 
 ``sleep``
   Put you computer to sleep
+
+If no ``command`` is defined or it's ``null``, the interaction with Slack will be run immediately (same as providing the ``--no-command`` option at the command line).
 
 Why?
 ====

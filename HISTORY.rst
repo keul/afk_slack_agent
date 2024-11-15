@@ -2,7 +2,7 @@
 History
 =======
 
-0.2.1 (unreleased)
+0.3.0 (2024-11-15)
 ------------------
 
 - If no ``command`` is defined, behave like if ``--no-command`` is used

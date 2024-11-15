@@ -6,7 +6,8 @@ History
 ------------------
 
 - If no ``command`` is defined, behave like if ``--no-command`` is used
-
+- Added ``back`` action (reserved, as ``terminate``)
+- Fixed buddy ``terminate``
 
 0.2.0 (2024-07-01)
 ------------------

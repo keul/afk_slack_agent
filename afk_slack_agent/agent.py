@@ -9,10 +9,10 @@ from dataclasses import dataclass
 from multiprocessing.connection import Listener
 from threading import Thread
 import datetime
-import psutil
 
 import click
 
+# Mess for MacOS interaction
 import Foundation
 from AppKit import NSObject
 from PyObjCTools import AppHelper
@@ -74,14 +74,6 @@ class NextSlackStatus:
 
 status = None
 slack_status = None
-
-
-def check_slack_is_active():
-    ls = []
-    for p in psutil.process_iter(["name"]):
-        if p.info["name"] == "Slack":
-            ls.append(p)
-    return len(ls) > 0
 
 
 def handleBack(afk_delay=None):
@@ -205,7 +197,7 @@ def agent_is_active():
 class HandleScreenLock(NSObject):
     def getScreenIsLocked_(self, notification):
         click.echo("Screen has been locked")
-        if not check_slack_is_active():
+        if not os_interaction_utils.check_slack_is_active():
             click.echo("Slack client is not active. Doing nothing")
             return
         if status.im_afk:
@@ -215,7 +207,7 @@ class HandleScreenLock(NSObject):
 
     def getScreenIsUnlocked_(self, notification):
         click.echo("Screen has been unlocked")
-        if not check_slack_is_active():
+        if not os_interaction_utils.check_slack_is_active():
             click.echo("Slack client is not active. Doing nothing")
             return
         handleBack()
@@ -306,7 +298,7 @@ def listen_for_messages():
             continue
         click.echo(f"Message: {msg}")
         # check is Slack is running
-        if not check_slack_is_active():
+        if not os_interaction_utils.check_slack_is_active():
             click.echo("Slack client is not active. Doing nothing")
             continue
         # do something with msg
@@ -314,7 +306,11 @@ def listen_for_messages():
             click.echo("Received termination request. Exiting")
             conn.close()
             AppHelper.stopEventLoop()
+            os_interaction_utils.kill_agent()
             break
+        if msg["action"] == "back":
+            handleBack()
+            continue
         # Now looks for user defined actions
         action = find_action(msg["action"])
         if not action:

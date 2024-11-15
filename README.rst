@@ -29,11 +29,9 @@ The agent is designed to be run in the background and stay active until you term
 
 Features implemented by the agent
 
-- waits for lock screen and unlock screen events (_very buggy, due to changes at every MacOS release_)
+- waits for lock screen and unlock screen events (_very buggy feature, due to changes in behavior in *every* MacOS release_ 😮‍💨)
 - connects to a Slack workspace, and change user status on lock (clean it on unlock)
 - optionally: write a message on a channel on lock/unlock
-
-Run ``afk --help`` for a list of all commands.
 
 Prerequisites
 =============
@@ -43,6 +41,18 @@ Prerequisites
     
     optionally, you could also enable ``chat:write`` and ``reactions:write``
 - to run custom AFK commands from the client, you'll need to enable the agent to control your Mac (from "Privacy and Security" system settings)
+
+How to use
+==========
+
+Run ``afk --help`` for a list of all commands.
+
+In brief: when the agent is running, you can run ``afk <action>`` to interact with slack.
+
+Actions must be customized in you ``.afk`` file (see below), apart for:
+
+- ``terminate`` - kill the agent
+- ``back``- signal Slack you are BTK
 
 Configuration
 =============

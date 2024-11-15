@@ -5,6 +5,7 @@ See also https://apple.stackexchange.com/questions/135728/using-applescript-to-l
 
 import os
 import subprocess
+import psutil
 
 
 def sleep():
@@ -29,3 +30,17 @@ def system_message(message):
             "AFK Agent",
         )
     )
+
+
+def check_slack_is_active():
+    ls = []
+    for p in psutil.process_iter(["name"]):
+        if p.info["name"] == "Slack":
+            ls.append(p)
+    return len(ls) > 0
+
+
+def kill_agent():
+    pid = os.getpid()
+    system_message("Killing AFK agent…")
+    psutil.Process(pid).kill()

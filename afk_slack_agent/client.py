@@ -14,7 +14,8 @@ def validate_action(action: str):
         click.echo("No action provided. Action is required when running the client.")
         sys.exit(1)
     actions = [a.get("action") for a in config.get_config("actions") if a.get("action")] + [
-        "terminate"
+        "terminate",
+        "back",
     ]
     if action not in actions:
         click.echo(f"Action \"{action}\" is not valid. Valid actions are {', '.join(actions)}")
@@ -94,7 +95,7 @@ def main(
             }
         )
         conn.close()
-    except FileNotFoundError:
+    except (FileNotFoundError, ConnectionRefusedError):
         click.echo("Error: is agent running?")
         sys.exit(1)
 

@@ -29,7 +29,7 @@ The agent is designed to be run in the background and stay active until you term
 
 Features implemented by the agent
 
-- waits for lock screen and unlock screen events (_very buggy feature, due to changes in behavior in *every* MacOS release_ 😮‍💨)
+- waits for lock screen and unlock screen events (*very buggy* feature, due to changes in behavior in *every* MacOS release 😮‍💨)
 - connects to a Slack workspace, and change user status on lock (clean it on unlock)
 - optionally: write a message on a channel on lock/unlock
 
